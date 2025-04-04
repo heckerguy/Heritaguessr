@@ -131,6 +131,7 @@ function App() {
   const [showCorrect, setShowCorrect] = useState(false);
   const [correctLocation, setCorrectLocation] = useState<Location | null>(null);
   const [showRules, setShowRules] = useState(true);
+  const [displayScore, setDisplayScore] = useState<string | null>(null);
 
   const handleGuess = (playerLat: number, playerLon: number) => {
     if (isDone === 1) return;
@@ -142,17 +143,24 @@ function App() {
     setUserGuess([playerLat, playerLon]);
     setCorrectLocation(correct);
     setShowCorrect(true);
-    setScore(roundScore);
+    const scoreText = `${roundScore} points (${distance.toFixed(1)} km)`;
+    setScore(scoreText);
+    setDisplayScore(scoreText);
     setTotalScore(prev => prev + roundScore);
     setScoreAnimation('score-animation');
 
     if (currentIndex + 1 >= answers.length) {
       setIsDone(1);
-      setScore(`You won with a score of ${totalScore + roundScore}!`);
+      const finalScore = `You won with a score of ${totalScore + roundScore}!`;
+      setScore(finalScore);
+      setDisplayScore(finalScore);
       setScoreAnimation('done-animation');
-    }
-    
-    if (currentIndex + 1 < answers.length) {
+    } else {
+      // Clear the score display after 2 seconds
+      setTimeout(() => {
+        setDisplayScore(null);
+      }, 2000);
+      
       setCurrentIndex(prev => prev + 1);
     }
   };
@@ -165,9 +173,11 @@ function App() {
         <p>{answers[currentIndex].name}</p>
       </dialog>
 
-      <dialog open className={`score ${scoreAnimation}`}>
-        <p>{score}</p>
-      </dialog>
+      {displayScore && (
+        <dialog open className={`score ${scoreAnimation}`}>
+          <p>{displayScore}</p>
+        </dialog>
+      )}
 
       <div className="absolute top-4 right-4 bg-white px-4 py-2 rounded-lg shadow-lg z-[1000]">
         <p className="font-bold">Total Score: {totalScore}</p>
